@@ -10,6 +10,13 @@ import java.io.*;
  */
 public class Converter {
 
+    private final static int VX_MASK = 0x0F00;
+    private final static int VY_MASK = 0x00F0;
+    private final static int ADDRESS_MASK = 0x0FFF;
+    private final static int M_8BIT = 0x00FF;
+    private final static int M_4BIT = 0x000F;
+    private final static int OPCODE_MASK = 0xF000;
+    private final static String HEX_PREFIX = "0x";
     /**
      * register sets
      */
@@ -54,12 +61,12 @@ public class Converter {
      * @return
      */
     private static String toASM(int opcode) {
-        String operand = "0x0" + Integer.toHexString(opcode & 0x0FFF);
-        byte regVx = (byte) ((opcode & 0x0F00) >> 8);
-        byte regVy = (byte) ((opcode & 0x00F0) >> 4);
-        switch (opcode & 0xF000) {
+        String operand = "0x0" + Integer.toHexString(opcode & ADDRESS_MASK);
+        byte regVx = (byte) ((opcode & VX_MASK) >> 8);
+        byte regVy = (byte) ((opcode & VY_MASK) >> 4);
+        switch (opcode & OPCODE_MASK) {
             case 0x0000:
-                switch (opcode & 0x00FF) {
+                switch (opcode & M_8BIT) {
                     case 0xE0:
                         return "CLS";
                     case 0xEE:
@@ -71,15 +78,15 @@ public class Converter {
             case 0x2000:
                 return "CALL " + operand;
             case 0x3000:
-                return "SET " + V_REG[regVx] + ", " + "0x00" + Integer.toHexString(opcode & 0x00FF);
+                return "SET " + V_REG[regVx] + ", " + "0x00" + Integer.toHexString(opcode & M_8BIT);
             case 0x4000:
-                return "SNE " + V_REG[regVx] + ", " + "0x00" + Integer.toHexString(opcode & 0x00FF);
+                return "SNE " + V_REG[regVx] + ", " + "0x00" + Integer.toHexString(opcode & M_8BIT);
             case 0x5000:
                 return "SE " + V_REG[regVx] + "," + V_REG[regVy] + "";
             case 0x6000:
-                return "LD " + V_REG[regVx] + ", " + "0x00" + Integer.toHexString(opcode & 0xFF);
+                return "LD " + V_REG[regVx] + ", " + "0x00" + Integer.toHexString(opcode & M_8BIT);
             case 0x7000:
-                return "ADD " + V_REG[regVx] + ", " + "0x00" + Integer.toHexString(opcode & 0xFF);
+                return "ADD " + V_REG[regVx] + ", " + "0x00" + Integer.toHexString(opcode & M_8BIT);
             case 0x8000:
                 switch (opcode & 0x0f) {
                     case 0x0:
@@ -95,11 +102,11 @@ public class Converter {
                     case 0x5:
                         return "SUB " + V_REG[regVx] + ", " + V_REG[regVy] + "";
                     case 0x6:
-                        return "SHR " + V_REG[regVx] + ", {,"+V_REG[regVy]+"}";
+                        return "SHR " + V_REG[regVx] + ", {," + V_REG[regVy] + "}";
                     case 0x7:
                         return "SUBN " + V_REG[regVx] + ", " + V_REG[regVy] + "";
                     case 0xE:
-                        return "SHL," + V_REG[regVx] + " {,"+V_REG[regVy]+"}";
+                        return "SHL," + V_REG[regVx] + " {," + V_REG[regVy] + "}";
                 }
                 ;
             case 0x9000:
@@ -109,18 +116,18 @@ public class Converter {
             case 0xB000:
                 return "JP V0, " + operand;
             case 0xC000:
-                return "RND " + V_REG[regVx] + ", " + "0x00" + Integer.toHexString(opcode & 0xFF);
+                return "RND " + V_REG[regVx] + ", " + "0x00" + Integer.toHexString(opcode & M_8BIT);
             case 0xD000:
-                return "DRW " + V_REG[regVx] + ", " + V_REG[regVy] + ", " + "0x000" + Integer.toHexString(opcode & 0x0F);
+                return "DRW " + V_REG[regVx] + ", " + V_REG[regVy] + ", " + "0x000" + Integer.toHexString(opcode & M_4BIT);
             case 0xE000:
-                switch (opcode & 0xFF) {
+                switch (opcode & M_8BIT) {
                     case 0x9E:
                         return "SKP " + V_REG[regVx] + "";
                     case 0xA1:
                         return "SKNP " + V_REG[regVx] + "";
                 }
             case 0xF000:
-                switch (opcode & 0xFF) {
+                switch (opcode & M_8BIT) {
                     case 0x07:
                         return "LD " + V_REG[regVx] + ", DT";
                     case 0x0A:
