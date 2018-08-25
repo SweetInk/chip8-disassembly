@@ -10,6 +10,11 @@ import java.io.*;
  */
 public class Converter {
 
+    /**
+     * register sets
+     */
+    private final static String V_REG[] = {"V0", "V1", "V2", "V3", "V4", "V5", "V6", "V7", "V8", "V9", "VA", "VB", "VC", "VD", "VE", "VF"};
+
     public static void main(String[] args) throws IOException {
         if (args.length <= 0) {
             System.out.println("No input file");
@@ -50,6 +55,8 @@ public class Converter {
      */
     private static String toASM(int opcode) {
         String operand = "0x0" + Integer.toHexString(opcode & 0x0FFF);
+        byte regVx = (byte) ((opcode & 0x0F00) >> 8);
+        byte regVy = (byte) ((opcode & 0x00F0) >> 4);
         switch (opcode & 0xF000) {
             case 0x0000:
                 switch (opcode & 0x00FF) {
@@ -64,74 +71,74 @@ public class Converter {
             case 0x2000:
                 return "CALL " + operand;
             case 0x3000:
-                return "SET Vx, " + "0x00" + Integer.toHexString(opcode & 0x00FF);
+                return "SET " + V_REG[regVx] + ", " + "0x00" + Integer.toHexString(opcode & 0x00FF);
             case 0x4000:
-                return "SNE Vx, " + "0x00" + Integer.toHexString(opcode & 0x00FF);
+                return "SNE " + V_REG[regVx] + ", " + "0x00" + Integer.toHexString(opcode & 0x00FF);
             case 0x5000:
-                return "SE Vx,Vy";
+                return "SE " + V_REG[regVx] + "," + V_REG[regVy] + "";
             case 0x6000:
-                return "LD Vx, " + "0x00" + Integer.toHexString(opcode & 0xFF);
+                return "LD " + V_REG[regVx] + ", " + "0x00" + Integer.toHexString(opcode & 0xFF);
             case 0x7000:
-                return "ADD Vx, " + "0x00" + Integer.toHexString(opcode & 0xFF);
+                return "ADD " + V_REG[regVx] + ", " + "0x00" + Integer.toHexString(opcode & 0xFF);
             case 0x8000:
                 switch (opcode & 0x0f) {
                     case 0x0:
-                        return "LD Vx, Vy";
+                        return "LD " + V_REG[regVx] + ", " + V_REG[regVy] + "";
                     case 0x1:
-                        return "OR Vx, Vy";
+                        return "OR " + V_REG[regVx] + ", " + V_REG[regVy] + "";
                     case 0x2:
-                        return "AND Vx, Vy";
+                        return "AND " + V_REG[regVx] + ", " + V_REG[regVy] + "";
                     case 0x3:
-                        return "XOR Vx, Vy";
+                        return "XOR " + V_REG[regVx] + ", " + V_REG[regVy] + "";
                     case 0x4:
-                        return "ADD Vx, Vy";
+                        return "ADD " + V_REG[regVx] + ", " + V_REG[regVy] + "";
                     case 0x5:
-                        return "SUB Vx, Vy";
+                        return "SUB " + V_REG[regVx] + ", " + V_REG[regVy] + "";
                     case 0x6:
-                        return "SHR Vx, {,Vy}";
+                        return "SHR " + V_REG[regVx] + ", {,"+V_REG[regVy]+"}";
                     case 0x7:
-                        return "SUBN Vx, Vy";
+                        return "SUBN " + V_REG[regVx] + ", " + V_REG[regVy] + "";
                     case 0xE:
-                        return "SHL,Vx {,Vy}";
+                        return "SHL," + V_REG[regVx] + " {,"+V_REG[regVy]+"}";
                 }
                 ;
             case 0x9000:
-                return "SNE Vx, Vy";
+                return "SNE " + V_REG[regVx] + ", " + V_REG[regVy] + "";
             case 0xA000:
                 return "LD I, " + operand;
             case 0xB000:
                 return "JP V0, " + operand;
             case 0xC000:
-                return "RND Vx, " + "0x00" + Integer.toHexString(opcode & 0xFF);
+                return "RND " + V_REG[regVx] + ", " + "0x00" + Integer.toHexString(opcode & 0xFF);
             case 0xD000:
-                return "DRW Vx, Vy, " + "0x000" + Integer.toHexString(opcode & 0x0F);
+                return "DRW " + V_REG[regVx] + ", " + V_REG[regVy] + ", " + "0x000" + Integer.toHexString(opcode & 0x0F);
             case 0xE000:
                 switch (opcode & 0xFF) {
                     case 0x9E:
-                        return "SKP Vx";
+                        return "SKP " + V_REG[regVx] + "";
                     case 0xA1:
-                        return "SKNP Vx";
+                        return "SKNP " + V_REG[regVx] + "";
                 }
             case 0xF000:
                 switch (opcode & 0xFF) {
                     case 0x07:
-                        return "LD Vx, DT";
+                        return "LD " + V_REG[regVx] + ", DT";
                     case 0x0A:
-                        return "LD Vx, K";
+                        return "LD " + V_REG[regVx] + ", K";
                     case 0x15:
-                        return "LD DT, Vx";
+                        return "LD DT, " + V_REG[regVx] + "";
                     case 0x18:
-                        return "LD ST, Vx";
+                        return "LD ST, " + V_REG[regVx] + "";
                     case 0x1E:
-                        return "ADD I, Vx";
+                        return "ADD I, " + V_REG[regVx] + "";
                     case 0x29:
-                        return "LD F, Vx";
+                        return "LD F, " + V_REG[regVx] + "";
                     case 0x33:
-                        return "LD B, Vx";
+                        return "LD B, " + V_REG[regVx] + "";
                     case 0x55:
-                        return "LD [I], Vx";
+                        return "LD [I], " + V_REG[regVx] + "";
                     case 0x65:
-                        return "LD Vx, [I]";
+                        return "LD " + V_REG[regVx] + ", [I]";
                 }
 
         }
