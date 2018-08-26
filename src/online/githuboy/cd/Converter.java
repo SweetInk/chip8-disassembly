@@ -2,6 +2,8 @@ package online.githuboy.cd;
 
 import java.io.*;
 
+import online.githuboy.cd.Opcode.*;
+
 /**
  * Disassembly `CHIP8` Game Rom to assembly code.
  *
@@ -16,7 +18,8 @@ public class Converter {
     private final static int M_8BIT = 0x00FF;
     private final static int M_4BIT = 0x000F;
     private final static int OPCODE_MASK = 0xF000;
-    private final static String HEX_PREFIX = "0x";
+
+
     /**
      * register sets
      */
@@ -64,88 +67,90 @@ public class Converter {
         String operand = "0x0" + Integer.toHexString(opcode & ADDRESS_MASK);
         byte regVx = (byte) ((opcode & VX_MASK) >> 8);
         byte regVy = (byte) ((opcode & VY_MASK) >> 4);
+        String Vx = V_REG[regVx];
+        String Vy = V_REG[regVy];
         switch (opcode & OPCODE_MASK) {
             case 0x0000:
                 switch (opcode & M_8BIT) {
                     case 0xE0:
-                        return "CLS";
+                        return Opcode.CLS.code();
                     case 0xEE:
-                        return "RET";
+                        return Opcode.RET.code();
                 }
-                return "SYS " + operand;
+                return Opcode.SYS.code(operand);
             case 0x1000:
-                return "JP " + operand;
+                return Opcode.JP.code(operand);
             case 0x2000:
-                return "CALL " + operand;
+                return Opcode.CALL.code(operand);
             case 0x3000:
-                return "SET " + V_REG[regVx] + ", " + "0x00" + Integer.toHexString(opcode & M_8BIT);
+                return Opcode.SET.code(Vx, "0x00" + Integer.toHexString(opcode & M_8BIT));
             case 0x4000:
-                return "SNE " + V_REG[regVx] + ", " + "0x00" + Integer.toHexString(opcode & M_8BIT);
+                return Opcode.SNE.code(Vx, "0x00" + Integer.toHexString(opcode & M_8BIT));
             case 0x5000:
-                return "SE " + V_REG[regVx] + "," + V_REG[regVy] + "";
+                return Opcode.SE.code(Vx, Vy);
             case 0x6000:
-                return "LD " + V_REG[regVx] + ", " + "0x00" + Integer.toHexString(opcode & M_8BIT);
+                return Opcode.LD.code(Vx, "0x00" + Integer.toHexString(opcode & M_8BIT));
             case 0x7000:
-                return "ADD " + V_REG[regVx] + ", " + "0x00" + Integer.toHexString(opcode & M_8BIT);
+                return Opcode.ADD.code(Vx, "0x00" + Integer.toHexString(opcode & M_8BIT));
             case 0x8000:
                 switch (opcode & 0x0f) {
                     case 0x0:
-                        return "LD " + V_REG[regVx] + ", " + V_REG[regVy] + "";
+                        return Opcode.LD.code(Vx, Vy);
                     case 0x1:
-                        return "OR " + V_REG[regVx] + ", " + V_REG[regVy] + "";
+                        return Opcode.OR.code(Vx, Vy);
                     case 0x2:
-                        return "AND " + V_REG[regVx] + ", " + V_REG[regVy] + "";
+                        return Opcode.AND.code(Vx, Vy);
                     case 0x3:
-                        return "XOR " + V_REG[regVx] + ", " + V_REG[regVy] + "";
+                        return Opcode.XOR.code(Vx, Vy);
                     case 0x4:
-                        return "ADD " + V_REG[regVx] + ", " + V_REG[regVy] + "";
+                        return Opcode.ADD.code(Vx, Vy);
                     case 0x5:
-                        return "SUB " + V_REG[regVx] + ", " + V_REG[regVy] + "";
+                        return Opcode.SUB.code(Vx, Vy);
                     case 0x6:
-                        return "SHR " + V_REG[regVx] + ", {," + V_REG[regVy] + "}";
+                        return Opcode.SHR.code(Vx, "{," + Vy + "}");
                     case 0x7:
-                        return "SUBN " + V_REG[regVx] + ", " + V_REG[regVy] + "";
+                        return Opcode.SUBN.code(Vx, Vy);
                     case 0xE:
-                        return "SHL," + V_REG[regVx] + " {," + V_REG[regVy] + "}";
+                        return Opcode.SHL.code(Vx, "{," + Vy + "}");
                 }
                 ;
             case 0x9000:
-                return "SNE " + V_REG[regVx] + ", " + V_REG[regVy] + "";
+                return Opcode.SNE.code(Vx, Vy);
             case 0xA000:
-                return "LD I, " + operand;
+                return Opcode.LD.code("I", operand);
             case 0xB000:
-                return "JP V0, " + operand;
+                return Opcode.JP.code(V_REG[0], operand);
             case 0xC000:
-                return "RND " + V_REG[regVx] + ", " + "0x00" + Integer.toHexString(opcode & M_8BIT);
+                return Opcode.RND.code(Vx, "0x00" + Integer.toHexString(opcode & M_8BIT));
             case 0xD000:
-                return "DRW " + V_REG[regVx] + ", " + V_REG[regVy] + ", " + "0x000" + Integer.toHexString(opcode & M_4BIT);
+                return Opcode.DRW.code(Vx, Vy, "0x000" + Integer.toHexString(opcode & M_4BIT));
             case 0xE000:
                 switch (opcode & M_8BIT) {
                     case 0x9E:
-                        return "SKP " + V_REG[regVx] + "";
+                        return Opcode.SKP.code(Vx);
                     case 0xA1:
-                        return "SKNP " + V_REG[regVx] + "";
+                        return Opcode.SKNP.code(Vx);
                 }
             case 0xF000:
                 switch (opcode & M_8BIT) {
                     case 0x07:
-                        return "LD " + V_REG[regVx] + ", DT";
+                        return Opcode.LD.code(Vx, "DT");
                     case 0x0A:
-                        return "LD " + V_REG[regVx] + ", K";
+                        return Opcode.LD.code(Vx, "K");
                     case 0x15:
-                        return "LD DT, " + V_REG[regVx] + "";
+                        return Opcode.LD.code("DT", Vx);
                     case 0x18:
-                        return "LD ST, " + V_REG[regVx] + "";
+                        return Opcode.LD.code("ST", Vx);
                     case 0x1E:
-                        return "ADD I, " + V_REG[regVx] + "";
+                        return Opcode.AND.code("I", Vx);
                     case 0x29:
-                        return "LD F, " + V_REG[regVx] + "";
+                        return Opcode.LD.code("F", Vx);
                     case 0x33:
-                        return "LD B, " + V_REG[regVx] + "";
+                        return Opcode.LD.code("B", Vx);
                     case 0x55:
-                        return "LD [I], " + V_REG[regVx] + "";
+                        return Opcode.LD.code("[I]", Vx);
                     case 0x65:
-                        return "LD " + V_REG[regVx] + ", [I]";
+                        return Opcode.LD.code(Vx, "[I]");
                 }
 
         }
