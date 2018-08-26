@@ -49,7 +49,7 @@ public class Converter {
             int b1 = memory[pc] & 0xFF;
             int b2 = memory[pc + 1] & 0xFF;
             int opcode = b1 << 8 | b2;
-            System.out.print("0x" + Integer.toHexString(opcode) + " " + "-> " + toASM(opcode) + "\n");
+            System.out.print(toASM(opcode) + "\n");
             pc += 2;
         }
         if (pc < memory.length) {
