@@ -31,7 +31,7 @@ public enum Opcode {
 
     public String code(String ...operands){
         if(operands.length==3){
-            return  this.toString()+" "+operands[0]+","+" "+operands[1]+" "+","+ " "+operands[2];
+            return  this.toString()+" "+operands[0]+","+" "+operands[1]+","+ " "+operands[2];
         } else if (operands.length ==2){
             return this.toString()+" "+operands[0]+","+" "+operands[1];
         } else if (operands.length == 1) {
